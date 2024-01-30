@@ -23,12 +23,23 @@ exports.register = tryCatch(async (req, res, next) => {
 });
 
 exports.login = tryCatch(async (req, res, next) => {
-  const { s_code, password } = req.body;
-  const user = await db.student.findUnique({
-    where: {
-      s_code: s_code,
-    },
-  });
+  const { t_code, s_code, password } = req.body;
+  if (s_code && t_code) {
+    throw new Error("Please enter only student code or teacher code ::400");
+  }
+ const user = t_code?
+    await db.teacher.findFirstOrThrow({
+      where: {
+        t_code: t_code,
+      },
+    }) 
+ :
+    await db.student.findFirstOrThrow({
+      where: {
+        s_code: s_code,
+      },
+    });
+
   if (!user) {
     return next(new Error("No user found::400"));
   }
@@ -36,15 +47,16 @@ exports.login = tryCatch(async (req, res, next) => {
   if (!isMatch) {
     return next(new Error("Incorrect Password::400"));
   }
-  const secretkey = "C04NM4N";
+ 
   const payload = {
     id: user.id,
     firstname: user.firstname,
+    t_code:user.t_code,
     s_code: user.s_code,
     email: user.email,
   };
-
+  const secretkey = process.env.SECRETKEY
   const token = jwt.sign(payload, secretkey, { expiresIn: 60 * 60 });
-
+  console.log(payload);
   res.status(200).json({ message: "login successful", user: payload, token });
 });
