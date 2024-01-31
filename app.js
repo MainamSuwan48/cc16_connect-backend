@@ -1,10 +1,12 @@
 require("dotenv").config();
-const cors = require('cors');
+const cors = require("cors");
 const express = require("express");
 const errorHandler = require("./middlewares/error");
 const notFound = require("./middlewares/notFound");
-
-const authRoute = require("./routes/auth-route")
+const authentication = require("./middlewares/authenticate");
+const authRoute = require("./routes/auth-route");
+const homeworkRoute = require("./routes/homework-route");
+const subjectRoute = require("./routes/subject-route");
 
 const app = express();
 
@@ -12,7 +14,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/auth',authRoute);
+app.use("/auth", authRoute);
+app.use("/homework", homeworkRoute);
+app.use("/subject", subjectRoute);
 
 app.use(notFound);
 app.use(errorHandler);
